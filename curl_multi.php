@@ -129,11 +129,11 @@ class CurlMultiDownload extends CurlMulti
         if ($this->auto) {
             $item = new DownloadItem();
             $this->total++;
-            $this->list[] = $item;
         } else {
             $item = $this->list[$index];
             if (is_string($item)) $item = new DownloadItem($item);
         }
+        $this->list[$index] = $item;
         $item->index = $index;
         $res = $this->callback->onStart($item, $this);
         if ($res === false) {
@@ -313,11 +313,11 @@ class CurlMulti
         if ($this->auto) {
             $item = new RequestItem();
             $this->total++;
-            $this->list[$index] = $item;
         } else {
             $item = $this->list[$index];
             if (is_string($item)) $item = new RequestItem($item);
         }
+        $this->list[$index] = $item;
         $item->index = $index;
         $res = $this->callback->onStart($item, $this);
         if ($res === false) {
