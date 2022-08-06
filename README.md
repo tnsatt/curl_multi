@@ -18,6 +18,29 @@ $down->callback = $callback;
 $down->printProgress = true;
 $down->start();
 ```
+Or using list
+```
+$list=[
+    "https://httpbin.org/get?index=1",
+    "https://httpbin.org/get?index=2",
+    "https://httpbin.org/get?index=3",
+    "https://httpbin.org/get?index=4",
+    "https://httpbin.org/get?index=5",
+];
+$callback = new class extends CurlCallback{
+    public function onStart($item, $curl)
+    {
+        echo "[start] ".$item->url.PHP_EOL;
+    }
+    public function onDone($item, $curl){
+        echo "[done] ".trim($item->text).PHP_EOL;
+    }
+};
+$down = new CurlMulti($list, 3);
+$down->callback = $callback;
+$down->start();
+```
+
 # Download
 ```
 
