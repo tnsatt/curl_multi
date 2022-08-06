@@ -13,10 +13,10 @@ $callback = new class extends CurlCallback{
         echo "[done] ".trim($item->text).PHP_EOL;
     }
 };
-$down = new CurlMulti([], 5, 10);
-$down->callback = $callback;
-$down->printProgress = true;
-$down->start();
+$curl = new CurlMulti([], 5, 10);
+$curl->callback = $callback;
+$curl->printProgress = true;
+$curl->start();
 ```
 Or using list
 ```
@@ -36,9 +36,9 @@ $callback = new class extends CurlCallback{
         echo "[done] ".trim($item->text).PHP_EOL;
     }
 };
-$down = new CurlMulti($list, 3);
-$down->callback = $callback;
-$down->start();
+$curl = new CurlMulti($list, 3);
+$curl->callback = $callback;
+$curl->start();
 ```
 
 # Download
@@ -55,8 +55,11 @@ $callback = new class extends CurlCallback{
         echo "[done] {$item->url}".PHP_EOL;
     }
 };
-$down = new CurlMultiDownload([], $path, 5, 10);
-$down->callback = $callback;
-$down->printProgress = true;
-$down->start();
+$curl = new CurlMultiDownload([], $path, 5, 10);
+$curl->callback = $callback;
+$curl->printProgress = true;
+$curl->start();
 ```
+
+
+
