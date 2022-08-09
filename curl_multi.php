@@ -361,8 +361,8 @@ class CurlMulti
         foreach ($this->list as $index => $item) {
             if (!$item) continue;
             $info = curl_getinfo($item->ch);
-            $this->handle($item, $info);
             curl_multi_remove_handle($this->mh, $item->ch);
+            $this->handle($item, $info);
         }
         curl_multi_close($this->mh);
         $this->end = true;
