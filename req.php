@@ -247,7 +247,7 @@ function getFilename($headers, $url = null)
         }
     }
     if (isset($headers['content-disposition'])) {
-        if (preg_match("/.*filename=[\"\s]*([^\"]+)[\"\s]*$/", $headers['content-disposition'], $match)) {
+        if (preg_match("/.*filename=[\"\'\s]*([^\"\']+)[\"\'\s]*$/", $headers['content-disposition'], $match)) {
             $filename = $match[1];
             $dot = strrpos($filename, ".");
             if ($dot !== false) {
@@ -283,13 +283,12 @@ function getFilename($headers, $url = null)
 function parseFilename($url)
 {
     $parse = parse_url($url);
-    if (isset($parse['path']) && !empty($parse['path']) && $parse['path'] != "/") {
-        return format_filename(basename($parse['path']));
-    } else if (isset($parse['pathname']) && !empty($parse['pathname']) && $parse['pathname'] != "/") {
-        return format_filename(basename($parse['pathname']));
-    } else {
-        return format_filename(basename($url));
-    }
+    $path = $parse['path']??($parse['pathname']??null);
+    if ($path && !preg_match("/^[\/\\\\]+$/", $path)) {
+        $name = format_filename(basename($path));
+        if($name!=="") return $name;
+    } 
+    return format_filename(basename($url));
 }
 function format_filename($name, $full = false)
 {
@@ -307,24 +306,6 @@ function format_filename($name, $full = false)
 //         return preg_replace('/([^\x20-~]+)|([\\/:?"<>|\s\%\_\r\n]+)/', '_', $name);
 //     }
 //     return preg_replace('/([\\/:?"<>|\s\%\_\r\n]+)/', '_', $name);
-// }
-// function getFilename($url, $headers){
-//     $ext = null;
-//     if($headers){
-//         if (isset($headers['content-disposition'])) {
-//             if (preg_match("/^.+filename\s*\=\s*[\"\']+(.+)[\"\']+$/", $headers['content-disposition'], $match)) {
-//                 return $match[1];
-//             }
-//         }
-//         if(isset($headers['content-type'])){
-//             $ext = mime2ext($headers['content-type']);
-//         }
-//     }
-//     $name = parseFilename($url);
-//     if($ext && substr($name, -strlen($ext)-1)!=".".$ext){
-//         $name .= ".".$ext;
-//     }
-//     return $name;
 // }
 
 ?>
