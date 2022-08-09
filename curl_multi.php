@@ -1,48 +1,5 @@
 <?php
-function headers_encode($h)
-{
-    $headers = [];
-    foreach ($h as $i => $v) {
-        if (is_string($i)) {
-            $headers[] = $i . ": " . $v;
-        } else {
-            $headers[] = $v;
-        }
-    }
-    return $headers;
-}
-function headers_decode($data, $keyval = true)
-{
-    if (is_string($data)) {
-        $data = explode("\n", $data);
-    }
-    $headers = [];
-    if (!$keyval) {
-        foreach ($data as $i => $part) {
-            $part = trim($part);
-            if ($part === "") continue;
-            $headers[] = $part;
-        }
-    } else {
-        foreach ($data as $i => $item) {
-            if (!is_numeric($i)) {
-                $headers[$i] = $item;
-                continue;
-            }
-            $item = trim($item);
-            if ($item === "") continue;
-            $index = strpos($item, ":");
-            if ($index === false) {
-                // $headers[] = $item;
-                continue;
-            }
-            $key = trim(strtolower(substr($item, 0, $index)));
-            $value = trim(substr($item, $index + 1));
-            $headers[$key] = $value;
-        }
-    }
-    return $headers;
-}
+include_once(__DIR__."/req.php");
 class CurlCallback
 {
     public function onStart($item, $curl)
@@ -154,7 +111,7 @@ class CurlMultiDownload extends CurlMulti
                 $item->is_temp = false;
             } else {
                 $item->is_temp = true;
-                $path = $this->tempDir . "/" . $this->parseFilename($item->url).".part";
+                $path = $this->tempDir . "/" . parseFilename($item->url).".part";
             }
             $dir = dirname($path);
             $item->name = basename($path);
@@ -182,13 +139,7 @@ class CurlMultiDownload extends CurlMulti
                 if ($item->is_temp) {
                     if (!$item->path) {
                         $item->headers = headers_decode($item->headers);
-                        $name = null;
-                        if (isset($item->headers['content-disposition'])) {
-                            if (preg_match("/^.+filename\s*\=\s*[\"\']+(.+)[\"\']+$/", $item->headers['content-disposition'], $match)) {
-                                $name = $match[1];
-                            }
-                        }
-                        if (!$name) $name = $this->parseFilename($item->url);
+                        $name = getFilename($item->headers, $item->url);
                         $item->path = $this->path . "/" . $name;
                     }
                     if(!$this->overwrite) $item->path = $this->check_file($item->path);
@@ -219,6 +170,16 @@ class CurlMultiDownload extends CurlMulti
         $this->done++;
         $item->done = true;
         $this->callback->onDone($item, $this);
+    }
+    function format_filename($name, $full = false)
+    {
+        if ($full) {
+            return trim(preg_replace('/([^\\x20-~]+)|([\\/:?\"<>|\s\%\_\r\n]+)/', '_', $name));
+        }
+        $name = preg_replace('/([\\/:*?\"<>|]+)/', '', $name);
+        $name = preg_replace('/[\\s\\r\\n]+/', ' ', $name);
+        $name = trim($name);
+        return $name;
     }
     public function status()
     {
@@ -561,27 +522,6 @@ class CurlMulti
             return '-' . $num;
         }
         return $num;
-    }
-    function parseFilename($url)
-    {
-        $parse = parse_url($url);
-        if (isset($parse['path']) && !empty($parse['path']) && $parse['path'] != "/") {
-            return $this->format_filename(basename($parse['path']));
-        } else if (isset($parse['pathname']) && !empty($parse['pathname']) && $parse['pathname'] != "/") {
-            return $this->format_filename(basename($parse['pathname']));
-        } else {
-            return $this->format_filename(basename($url));
-        }
-    }
-    function format_filename($name, $full = false)
-    {
-        if ($full) {
-            return trim(preg_replace('/([^\\x20-~]+)|([\\/:?\"<>|\s\%\_\r\n]+)/', '_', $name));
-        }
-        $name = preg_replace('/([\\/:*?\"<>|]+)/', '', $name);
-        $name = preg_replace('/[\\s\\r\\n]+/', ' ', $name);
-        $name = trim($name);
-        return $name;
     }
     function deb($text){
         if($this->debug){
