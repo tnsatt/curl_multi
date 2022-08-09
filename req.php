@@ -245,8 +245,6 @@ function getFilename($headers, $url = null)
         if (is_string($headers)) {
             $headers = headers_decode($headers);
         }
-    } else if (is_array($headers)) {
-    } else {
     }
     if (isset($headers['content-disposition'])) {
         if (preg_match("/.*filename=[\"\s]*([^\"]+)[\"\s]*$/", $headers['content-disposition'], $match)) {
@@ -262,6 +260,9 @@ function getFilename($headers, $url = null)
     }
     if ($ext == null && isset($headers['content-type'])) {
         $ext = mime2ext(trim($headers['content-type']));
+        if(!$ext && strpos($headers['content-type'], "htm")!==false){
+            $ext = "html";
+        }
     }
     if ($name == null || $ext == null) {
         $filename = parseFilename($url);
@@ -325,3 +326,5 @@ function format_filename($name, $full = false)
 //     }
 //     return $name;
 // }
+
+?>
