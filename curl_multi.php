@@ -104,8 +104,8 @@ class CurlMultiDownload extends CurlMulti
     public $tempDir;
     public $path = null;
     public $isTemp = false;
-
-    public function __construct($list, $path, $thread = 3, $max = 0)
+    public $overwrite = false;
+    public function __construct($list, $path, $thread = 3, $max = 0, $overwrite=false)
     {
         parent::__construct($list, $thread, $max);
         if (!$path) throw new Exception("Undefined Download Directory");
@@ -117,6 +117,7 @@ class CurlMultiDownload extends CurlMulti
         if (!file_exists($this->tempDir)) {
             @mkdir($this->tempDir, 0777, true);
         }
+        $this->overwrite = $overwrite;
     }
     public function start()
     {
@@ -130,12 +131,10 @@ class CurlMultiDownload extends CurlMulti
         $this->count++;
         if ($this->auto) {
             $item = new DownloadItem();
-            $this->total++;
         } else {
             $item = $this->list[$index];
             if (is_string($item)) $item = new DownloadItem($item);
         }
-        $this->list[$index] = $item;
         $item->index = $index;
         $res = $this->callback->onStart($item, $this);
         if ($res === false) {
@@ -143,6 +142,8 @@ class CurlMultiDownload extends CurlMulti
             $this->stop = true;
             return false;
         }
+        if ($this->auto) $this->total++;
+        $this->list[$index] = $item;
         if ($item->path) $item->path = $this->format_path($item->path, "/", true);
         if ($this->isTemp) {
             $item->temp = $this->check_file($this->tempDir . "/" . uniqid(rand(), true));
@@ -158,7 +159,7 @@ class CurlMultiDownload extends CurlMulti
             $dir = dirname($path);
             $item->name = basename($path);
             if (!file_exists($dir)) @mkdir($dir, 0777, true);
-            $item->temp = $this->check_file($path);
+            $item->temp = $this->overwrite && !$item->is_temp?$path:$this->check_file($path);
         }
         $item->fp = fopen($item->temp, 'w+');
         $item->ch = $this->curl_download_handle($item->url . "#" . $index, $item->fp, $item->data, 
@@ -190,7 +191,7 @@ class CurlMultiDownload extends CurlMulti
                         if (!$name) $name = $this->parseFilename($item->url);
                         $item->path = $this->path . "/" . $name;
                     }
-                    $item->path = $this->check_file($item->path);
+                    if(!$this->overwrite) $item->path = $this->check_file($item->path);
                     $dir = dirname($item->path);
                     if (!file_exists($dir)) @mkdir($dir, 0777, true);
                 }
@@ -279,6 +280,7 @@ class CurlMulti
     public function start()
     {
         $this->total = count($this->list);
+        $this->start = time();
         $this->reloop();
         $this->main();
     }
@@ -316,12 +318,10 @@ class CurlMulti
         $this->count++;
         if ($this->auto) {
             $item = new RequestItem();
-            $this->total++;
         } else {
             $item = $this->list[$index];
             if (is_string($item)) $item = new RequestItem($item);
         }
-        $this->list[$index] = $item;
         $item->index = $index;
         $res = $this->callback->onStart($item, $this);
         if ($res === false) {
@@ -329,6 +329,8 @@ class CurlMulti
             $this->stop = true;
             return false;
         }
+        if ($this->auto) $this->total++;
+        $this->list[$index] = $item;
         $item->ch = $this->curl_handle($item->url . "#" . $index, $item->data, $item->upload_file, 
         $item->request_headers, $item->timeout, $item->input, $item);
         curl_multi_add_handle($this->mh, $item->ch);
@@ -336,7 +338,6 @@ class CurlMulti
     }
     public function main()
     {
-        $this->start = time();
         $running = 0;
         do {
             curl_multi_exec($this->mh, $running);
