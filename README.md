@@ -1,6 +1,8 @@
 # curl_multi
 Multiple requests(downloads) using curl_multi PHP
-
+```
+include_once("curl_multi.php");
+```
 # Request
 ```
 $callback = new class extends CurlCallback{
