@@ -68,7 +68,9 @@ class RequestItem
     public $request_headers=null;
     public $input = [];
     public $timeout = 300;
-
+    public $code = 0;
+    public $info = null;
+    
     public function __construct($url = null)
     {
         $this->url = $url;
@@ -168,6 +170,8 @@ class CurlMultiDownload extends CurlMulti
     {
         if ($item->fp) fclose($item->fp);
         if ($item->ch) curl_close($item->ch);
+        $item->code = $info['http_code'];
+        $item->info = $info;
         if (file_exists($item->temp)) {
             $content_length = curl_getinfo($item->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
             $size = filesize($item->temp);
@@ -369,6 +373,8 @@ class CurlMulti
     {
         $item->text = curl_exec($item->ch);
         if ($item->ch) curl_close($item->ch);
+        $item->code = $info['http_code'];
+        $item->info = $info;
         if ($info['http_code'] == 200) {
             $this->success++;
             $item->success = true;
