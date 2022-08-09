@@ -370,7 +370,7 @@ class CurlMulti
     }
     public function handle($item, $info)
     {
-        $item->text = curl_exec($item->ch);
+        $item->text = curl_multi_getcontent($item->ch);
         if ($item->ch) curl_close($item->ch);
         $item->code = $info['http_code'];
         $item->info = $info;
