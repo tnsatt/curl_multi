@@ -169,7 +169,7 @@ class CurlMultiDownload extends CurlMulti
     public function handle($item, $info)
     {
         if ($item->fp) fclose($item->fp);
-        if ($item->ch) curl_close($item->ch);
+        curl_close($item->ch);
         $item->code = $info['http_code'];
         $item->info = $info;
         if (file_exists($item->temp)) {
@@ -371,7 +371,7 @@ class CurlMulti
     public function handle($item, $info)
     {
         $item->text = curl_multi_getcontent($item->ch);
-        if ($item->ch) curl_close($item->ch);
+        curl_close($item->ch);
         $item->code = $info['http_code'];
         $item->info = $info;
         if ($info['http_code'] == 200) {
