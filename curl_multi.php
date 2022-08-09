@@ -357,7 +357,7 @@ class CurlMulti
                 $this->list[$i] = null;
             }
             $this->status();
-            usleep(100000);
+            // usleep(100000);
         } while ($running > 0);
         foreach ($this->list as $index => $item) {
             if (!$item) continue;
