@@ -1,5 +1,4 @@
 <?php
-//2
 include_once(__DIR__."/req.php");
 class CurlCallback
 {
