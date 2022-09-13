@@ -93,11 +93,13 @@ class CurlMultiDownload extends CurlMulti
             if (is_string($item)) $item = new DownloadItem($item);
         }
         $item->index = $index;
-        $res = $this->callback->onStart($item, $this);
-        if ($res === false) {
-            $this->connect--;
-            $this->stop = true;
-            return false;
+        if($this->callback){
+            $res = $this->callback->onStart($item, $this);
+            if ($res === false) {
+                $this->connect--;
+                $this->stop = true;
+                return false;
+            }
         }
         if ($this->auto) $this->total++;
         $this->list[$index] = $item;
@@ -169,7 +171,7 @@ class CurlMultiDownload extends CurlMulti
         }
         $this->done++;
         $item->done = true;
-        $this->callback->onDone($item, $this);
+        if($this->callback) $this->callback->onDone($item, $this);
     }
     function format_filename($name, $full = false)
     {
@@ -284,11 +286,13 @@ class CurlMulti
             if (is_string($item)) $item = new RequestItem($item);
         }
         $item->index = $index;
-        $res = $this->callback->onStart($item, $this);
-        if ($res === false) {
-            $this->connect--;
-            $this->stop = true;
-            return false;
+        if($this->callback){
+            $res = $this->callback->onStart($item, $this);
+            if ($res === false) {
+                $this->connect--;
+                $this->stop = true;
+                return false;
+            }
         }
         if ($this->auto) $this->total++;
         $this->list[$index] = $item;
@@ -345,7 +349,7 @@ class CurlMulti
         }
         $this->done++;
         $item->done = true;
-        $this->callback->onDone($item, $this);
+        if($this->callback) $this->callback->onDone($item, $this);
     }
     public function status()
     {
